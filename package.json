@@ -10,14 +10,14 @@
     "text-extraction"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/docutray/n8n-nodes-docutray#readme",
   "author": {
     "name": "Roberto",
     "email": "roberto@docutray.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/roberto/n8n-nodes-docutray.git"
+    "url": "https://github.com/docutray/n8n-nodes-docutray.git"
   },
   "engines": {
     "node": ">=20.15"
