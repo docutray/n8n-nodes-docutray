@@ -25,9 +25,12 @@ export const docutrayKnowledgeBaseOperations: INodeProperties[] = [
 
 export const docutrayKnowledgeBaseFields: INodeProperties[] = [
 	{
-		displayName: 'Knowledge Base ID',
+		displayName: 'Knowledge Base Name or ID',
 		name: 'knowledgeBaseId',
-		type: 'string',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'getKnowledgeBases',
+		},
 		required: true,
 		displayOptions: {
 			show: {
@@ -35,8 +38,9 @@ export const docutrayKnowledgeBaseFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Unique identifier of the knowledge base to search',
-		placeholder: 'kb_abc123',
+		description: 'Choose from the list or enter an ID manually. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		hint: 'Select a knowledge base from the dropdown or enter its ID directly',
+		placeholder: 'Select knowledge base or enter ID',
 	},
 	{
 		displayName: 'Query',

@@ -1,6 +1,8 @@
 import {
 	IExecuteFunctions,
+	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 	NodeConnectionType,
@@ -37,6 +39,60 @@ export class DocutrayKnowledgeBase implements INodeType {
 			...docutrayKnowledgeBaseOperations,
 			...docutrayKnowledgeBaseFields,
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			async getKnowledgeBases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const returnData: INodePropertyOptions[] = [];
+
+				try {
+					const requestOptions = {
+						method: 'GET' as const,
+						url: 'https://app.docutray.com/api/knowledge/bases',
+						headers: {
+							'Accept': 'application/json',
+						},
+						qs: {
+							isActive: true,
+							limit: 100, // Maximum allowed by API
+						},
+						json: true,
+					};
+
+					// Make the API request
+					const response = await this.helpers.requestWithAuthentication.call(
+						this,
+						'docutrayApi',
+						requestOptions,
+					);
+
+					// Handle the response structure
+					const knowledgeBases = response.data || [];
+
+					// Transform knowledge bases into options
+					for (const kb of knowledgeBases) {
+						const name = kb.name || kb.id;
+						const description = kb.description ? ` - ${kb.description}` : '';
+						const docCount = kb.documentCount ? ` (${kb.documentCount} docs)` : '';
+
+						returnData.push({
+							name: `${name}${description}${docCount}`,
+							value: kb.id,
+						});
+					}
+
+					// Sort alphabetically by name
+					returnData.sort((a, b) => a.name.localeCompare(b.name));
+
+				} catch (error) {
+					// If API fails, return empty array to allow manual input
+					// Silently fail to allow manual input fallback
+				}
+
+				return returnData;
+			},
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
