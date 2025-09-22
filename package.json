@@ -1,13 +1,16 @@
 {
   "name": "n8n-nodes-docutray",
-  "version": "0.1.0",
-  "description": "n8n community node for Docutray OCR and document identification services",
+  "version": "0.2.0",
+  "description": "n8n community nodes for Docutray OCR, document identification, and knowledge base search services",
   "keywords": [
     "n8n-community-node-package",
     "docutray",
     "ocr",
     "document-processing",
-    "text-extraction"
+    "text-extraction",
+    "knowledge-base",
+    "rag",
+    "semantic-search"
   ],
   "license": "MIT",
   "homepage": "https://github.com/docutray/n8n-nodes-docutray#readme",

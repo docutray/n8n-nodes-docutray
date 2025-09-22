@@ -1,13 +1,15 @@
+import { Buffer } from 'buffer';
 import {
 	IExecuteFunctions,
+	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { Buffer } from 'buffer';
-import { docutrayFields, docutrayOperations } from './DocutrayDescription';
+import { resourceSelector, docutrayFields, docutrayOperations } from './DocutrayDescription';
 
 export class Docutray implements INodeType {
 	description: INodeTypeDescription = {
@@ -16,8 +18,8 @@ export class Docutray implements INodeType {
 		icon: 'file:docutray.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["operation"]}}',
-		description: 'Process documents with Docutray OCR and identification services',
+		subtitle: '={{$parameter["resource"]}} - {{$parameter["operation"]}}',
+		description: 'Process documents and search knowledge bases with Docutray services',
 		defaults: {
 			name: 'Docutray',
 		},
@@ -36,22 +38,59 @@ export class Docutray implements INodeType {
 			},
 		},
 		properties: [
-			{
-				displayName: 'Resource',
-				name: 'resource',
-				type: 'options',
-				noDataExpression: true,
-				options: [
-					{
-						name: 'Document',
-						value: 'document',
-					},
-				],
-				default: 'document',
-			},
+			resourceSelector,
 			...docutrayOperations,
 			...docutrayFields,
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			async getKnowledgeBases(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const returnData: INodePropertyOptions[] = [];
+
+				try {
+					const requestOptions = {
+						method: 'GET' as const,
+						url: 'https://app.docutray.com/api/knowledge-bases',
+						headers: {
+							'Accept': 'application/json',
+						},
+						qs: {
+							isActive: true,
+							limit: 100,
+						},
+						json: true,
+					};
+
+					const response = await this.helpers.requestWithAuthentication.call(
+						this,
+						'docutrayApi',
+						requestOptions,
+					);
+
+					const knowledgeBases = response.data || [];
+
+					for (const kb of knowledgeBases) {
+						const name = kb.name || kb.id;
+						const description = kb.description ? ` - ${kb.description}` : '';
+						const docCount = kb.documentCount ? ` (${kb.documentCount} docs)` : '';
+
+						returnData.push({
+							name: `${name}${description}${docCount}`,
+							value: kb.id,
+						});
+					}
+
+					returnData.sort((a, b) => a.name.localeCompare(b.name));
+
+				} catch (error) {
+					// Silently fail to allow manual input fallback
+				}
+
+				return returnData;
+			},
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -60,148 +99,180 @@ export class Docutray implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
+				const resource = this.getNodeParameter('resource', i) as string;
 				const operation = this.getNodeParameter('operation', i) as string;
-				const inputMethod = this.getNodeParameter('inputMethod', i) as string;
 
-				let requestOptions: any = {
-					method: 'POST',
-					url: operation === 'convert' 
-						? 'https://app.docutray.com/api/convert' 
-						: 'https://app.docutray.com/api/identify',
-					headers: {
-						'Accept': 'application/json',
-					},
-				};
+				if (resource === 'knowledgeBase') {
+					// Handle knowledge base search operation
+					if (operation === 'search') {
+						const knowledgeBaseId = this.getNodeParameter('knowledgeBaseId', i) as string;
+						const query = this.getNodeParameter('query', i) as string;
+						const limit = this.getNodeParameter('limit', i, 10) as number;
+						const similarityThreshold = this.getNodeParameter('similarityThreshold', i, 0.7) as number;
+						const includeMetadata = this.getNodeParameter('includeMetadata', i, true) as boolean;
 
-				// Handle different input methods with appropriate format
-				if (inputMethod === 'binaryData') {
-					// Use multipart/form-data for binary files
-					const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
-					const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+						const requestOptions: any = {
+							method: 'POST',
+							url: `https://app.docutray.com/api/knowledge-bases/${knowledgeBaseId}/search`,
+							headers: {
+								'Accept': 'application/json',
+								'Content-Type': 'application/json',
+							},
+							body: {
+								query,
+								limit,
+								similarityThreshold,
+								includeMetadata,
+							},
+							json: true,
+						};
 
-					// Convert base64 string back to Buffer for proper binary handling
-					const buffer = Buffer.from(binaryData.data, 'base64');
-					
-					const formData: any = {};
-					formData.image = {
-						value: buffer,
-						options: {
-							filename: binaryData.fileName || 'document.pdf',
-							contentType: binaryData.mimeType,
+						const responseData = await this.helpers.requestWithAuthentication.call(
+							this,
+							'docutrayApi',
+							requestOptions,
+						);
+
+						let parsedResponse = responseData;
+						if (typeof responseData === 'string') {
+							try {
+								parsedResponse = JSON.parse(responseData);
+							} catch (parseError) {
+								parsedResponse = responseData;
+							}
+						}
+
+						returnData.push({
+							json: parsedResponse,
+							pairedItem: {
+								item: i,
+							},
+						});
+					}
+				} else if (resource === 'document') {
+					// Handle document operations (convert/identify)
+					const inputMethod = this.getNodeParameter('inputMethod', i) as string;
+
+					let requestOptions: any = {
+						method: 'POST',
+						url: operation === 'convert'
+							? 'https://app.docutray.com/api/convert'
+							: 'https://app.docutray.com/api/identify',
+						headers: {
+							'Accept': 'application/json',
 						},
 					};
 
-					// Add operation-specific parameters to form data
-					if (operation === 'convert') {
-						const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
-						formData.document_type_code = documentTypeCode;
-					} else if (operation === 'identify') {
-						const documentTypeOptionsParam = this.getNodeParameter('documentTypeOptions', i) as any;
-						
-						// Extract codes from the fixedCollection structure
-						let optionsArray: string[] = [];
-						if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
-							optionsArray = documentTypeOptionsParam.values.map((item: any) => item.code).filter((code: string) => code && code.trim());
+					if (inputMethod === 'binaryData') {
+						// Use multipart/form-data for binary files
+						const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+						const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+						const buffer = Buffer.from(binaryData.data, 'base64');
+
+						const formData: any = {};
+						formData.image = {
+							value: buffer,
+							options: {
+								filename: binaryData.fileName || 'document.pdf',
+								contentType: binaryData.mimeType,
+							},
+						};
+
+						if (operation === 'convert') {
+							const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
+							formData.document_type_code = documentTypeCode;
+						} else if (operation === 'identify') {
+							const documentTypeOptionsParam = this.getNodeParameter('documentTypeOptions', i) as any;
+
+							let optionsArray: string[] = [];
+							if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
+								optionsArray = documentTypeOptionsParam.values.map((item: any) => item.code).filter((code: string) => code && code.trim());
+							}
+
+							formData.document_type_code_options = JSON.stringify(optionsArray);
+							formData.image_content_type = binaryData.mimeType;
 						}
-						
-						// For formData, send as JSON string
-						const jsonString = JSON.stringify(optionsArray);
-						
-						formData.document_type_code_options = jsonString;
-						
-						// Add image_content_type for identify operation
-						formData.image_content_type = binaryData.mimeType;
+
+						const documentMetadata = this.getNodeParameter('documentMetadata', i, '{}') as string;
+						if (documentMetadata && documentMetadata !== '{}') {
+							try {
+								const parsedMetadata = JSON.parse(documentMetadata);
+								formData.document_metadata = JSON.stringify(parsedMetadata);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), 'Invalid JSON in document metadata');
+							}
+						}
+
+						requestOptions.formData = formData;
+
+					} else {
+						// Use JSON for Base64 and URL methods
+						const requestBody: any = {};
+
+						if (inputMethod === 'base64') {
+							const imageBase64 = this.getNodeParameter('imageBase64', i) as string;
+							const imageContentType = this.getNodeParameter('imageContentType', i) as string;
+
+							requestBody.image_base64 = imageBase64;
+							requestBody.image_content_type = imageContentType;
+
+						} else if (inputMethod === 'url') {
+							const imageUrl = this.getNodeParameter('imageUrl', i) as string;
+							requestBody.image_url = imageUrl;
+
+							const imageContentType = this.getNodeParameter('imageContentType', i, 'application/pdf') as string;
+							requestBody.image_content_type = imageContentType;
+						}
+
+						if (operation === 'convert') {
+							const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
+							requestBody.document_type_code = documentTypeCode;
+						} else if (operation === 'identify') {
+							const documentTypeOptionsParam = this.getNodeParameter('documentTypeOptions', i) as any;
+
+							let optionsArray: string[] = [];
+							if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
+								optionsArray = documentTypeOptionsParam.values.map((item: any) => item.code).filter((code: string) => code && code.trim());
+							}
+
+							requestBody.document_type_code_options = optionsArray;
+						}
+
+						const documentMetadata = this.getNodeParameter('documentMetadata', i, '{}') as string;
+						if (documentMetadata && documentMetadata !== '{}') {
+							try {
+								requestBody.document_metadata = JSON.parse(documentMetadata);
+							} catch (error) {
+								throw new NodeOperationError(this.getNode(), 'Invalid JSON in document metadata');
+							}
+						}
+
+						requestOptions.body = requestBody;
+						requestOptions.json = true;
 					}
 
-					// Add optional metadata
-					const documentMetadata = this.getNodeParameter('documentMetadata', i, '{}') as string;
-					if (documentMetadata && documentMetadata !== '{}') {
+					const responseData = await this.helpers.requestWithAuthentication.call(
+						this,
+						'docutrayApi',
+						requestOptions,
+					);
+
+					let parsedResponse = responseData;
+					if (typeof responseData === 'string') {
 						try {
-							// Parse and re-stringify to ensure valid JSON
-							const parsedMetadata = JSON.parse(documentMetadata);
-							const metadataString = JSON.stringify(parsedMetadata);
-							formData.document_metadata = metadataString;
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), 'Invalid JSON in document metadata');
+							parsedResponse = JSON.parse(responseData);
+						} catch (parseError) {
+							parsedResponse = responseData;
 						}
 					}
 
-					requestOptions.formData = formData;
-
-				} else {
-					// Use JSON for Base64 and URL methods
-					const requestBody: any = {};
-
-					if (inputMethod === 'base64') {
-						const imageBase64 = this.getNodeParameter('imageBase64', i) as string;
-						const imageContentType = this.getNodeParameter('imageContentType', i) as string;
-						
-						requestBody.image_base64 = imageBase64;
-						requestBody.image_content_type = imageContentType;
-						
-					} else if (inputMethod === 'url') {
-						const imageUrl = this.getNodeParameter('imageUrl', i) as string;
-						requestBody.image_url = imageUrl;
-						
-						// image_content_type is required for both convert and identify
-						const imageContentType = this.getNodeParameter('imageContentType', i, 'application/pdf') as string;
-						requestBody.image_content_type = imageContentType;
-					}
-
-					// Add common parameters for JSON requests
-					if (operation === 'convert') {
-						const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
-						requestBody.document_type_code = documentTypeCode;
-					} else if (operation === 'identify') {
-						const documentTypeOptionsParam = this.getNodeParameter('documentTypeOptions', i) as any;
-						
-						// Extract codes from the fixedCollection structure
-						let optionsArray: string[] = [];
-						if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
-							optionsArray = documentTypeOptionsParam.values.map((item: any) => item.code).filter((code: string) => code && code.trim());
-						}
-						
-						requestBody.document_type_code_options = optionsArray;
-					}
-
-					// Add optional metadata for JSON requests
-					const documentMetadata = this.getNodeParameter('documentMetadata', i, '{}') as string;
-					if (documentMetadata && documentMetadata !== '{}') {
-						try {
-							requestBody.document_metadata = JSON.parse(documentMetadata);
-						} catch (error) {
-							throw new NodeOperationError(this.getNode(), 'Invalid JSON in document metadata');
-						}
-					}
-
-					requestOptions.body = requestBody;
-					requestOptions.json = true;
+					returnData.push({
+						json: parsedResponse,
+						pairedItem: {
+							item: i,
+						},
+					});
 				}
-
-				// Make the API request
-				const responseData = await this.helpers.requestWithAuthentication.call(
-					this,
-					'docutrayApi',
-					requestOptions,
-				);
-
-				// Try to parse JSON if it's a string
-				let parsedResponse = responseData;
-				if (typeof responseData === 'string') {
-					try {
-						parsedResponse = JSON.parse(responseData);
-					} catch (parseError) {
-						// Keep as string if it fails to parse
-						parsedResponse = responseData;
-					}
-				}
-
-				returnData.push({
-					json: parsedResponse,
-					pairedItem: {
-						item: i,
-					},
-				});
 
 			} catch (error) {
 				if (this.continueOnFail()) {
