@@ -8,19 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2025-09-22
 
 ### Added
-- **Knowledge Base Search Operation**: New RAG-based semantic search functionality
+- **Docutray Knowledge Base Node**: New independent node for RAG-based semantic search
   - Search within knowledge bases using natural language queries
   - Configurable similarity threshold (0-1, default: 0.7)
   - Adjustable result limits (1-50, default: 10)
   - Optional metadata inclusion in search results
   - Support for knowledge base ID specification
-- Updated documentation with Knowledge Base Search operation details
+- Updated documentation with separate node sections
 - Added new keywords: knowledge-base, rag, semantic-search
 
 ### Changed
-- Enhanced resource selection to include "Knowledge Base" alongside "Document"
-- Updated API endpoint handling to support knowledge base search endpoint
-- Improved node description to reflect new capabilities
+- **BREAKING**: Refactored architecture into two specialized nodes
+  - **Docutray**: Focused on document processing (Convert/Identify operations)
+  - **Docutray Knowledge Base**: Dedicated to knowledge base search operations
+- Updated package.json to register both nodes
+- Enhanced documentation structure for multi-node architecture
+- Improved separation of concerns following n8n best practices
 
 ## [0.1.0] - 2025-09-22
 

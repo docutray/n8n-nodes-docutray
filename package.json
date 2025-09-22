@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-docutray",
   "version": "0.2.0",
-  "description": "n8n community node for Docutray OCR and document identification services",
+  "description": "n8n community nodes for Docutray OCR, document identification, and knowledge base search services",
   "keywords": [
     "n8n-community-node-package",
     "docutray",
@@ -43,7 +43,8 @@
       "dist/credentials/DocutrayApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Docutray/Docutray.node.js"
+      "dist/nodes/Docutray/Docutray.node.js",
+      "dist/nodes/DocutrayKnowledgeBase/DocutrayKnowledgeBase.node.js"
     ]
   },
   "devDependencies": {

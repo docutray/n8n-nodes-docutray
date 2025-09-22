@@ -1,6 +1,6 @@
 # n8n-nodes-docutray
 
-This is an n8n community node that provides seamless integration with [Docutray](https://docutray.com/), a powerful document processing and OCR service. It enables you to automate document text extraction and identification workflows directly within your n8n automations.
+This is an n8n community node package that provides seamless integration with [Docutray](https://docutray.com/), a powerful document processing and OCR service. It includes two specialized nodes to automate document processing and knowledge base search workflows directly within your n8n automations.
 
 ## Features
 
@@ -23,9 +23,15 @@ To use this node, you'll need a Docutray API key:
 3. Generate an API key
 4. Configure the "Docutray API" credentials in n8n with your API key
 
-## Available Operations
+## Available Nodes
 
-### Convert Operation
+This package includes two specialized nodes:
+
+### 1. Docutray (Document Processing)
+
+Handles document OCR and type identification operations.
+
+#### Convert Operation
 Extract text from documents using OCR technology.
 
 **Supported Methods:**
@@ -38,7 +44,7 @@ Extract text from documents using OCR technology.
 - Image content type (optional)
 - Document metadata (optional)
 
-### Identify Operation
+#### Identify Operation
 Automatically identify document types from a list of options.
 
 **Supported Methods:**
@@ -54,7 +60,11 @@ Automatically identify document types from a list of options.
 - Primary document type with confidence score
 - Alternative document type suggestions
 
-### Knowledge Base Search Operation
+### 2. Docutray Knowledge Base (RAG Search)
+
+Handles semantic search operations within knowledge bases using RAG technology.
+
+#### Search Operation
 Perform semantic search within knowledge bases using RAG technology.
 
 **Parameters:**
