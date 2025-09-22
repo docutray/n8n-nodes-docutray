@@ -43,8 +43,7 @@
       "dist/credentials/DocutrayApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/Docutray/Docutray.node.js",
-      "dist/nodes/DocutrayKnowledgeBase/DocutrayKnowledgeBase.node.js"
+      "dist/nodes/Docutray/Docutray.node.js"
     ]
   },
   "devDependencies": {

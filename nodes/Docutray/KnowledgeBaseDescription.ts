@@ -1,11 +1,16 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const docutrayKnowledgeBaseOperations: INodeProperties[] = [
+export const knowledgeBaseOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
 		type: 'options',
 		noDataExpression: true,
+		displayOptions: {
+			show: {
+				resource: ['knowledgeBase'],
+			},
+		},
 		options: [
 			{
 				name: 'Search',
@@ -23,7 +28,7 @@ export const docutrayKnowledgeBaseOperations: INodeProperties[] = [
 	},
 ];
 
-export const docutrayKnowledgeBaseFields: INodeProperties[] = [
+export const knowledgeBaseFields: INodeProperties[] = [
 	{
 		displayName: 'Knowledge Base Name or ID',
 		name: 'knowledgeBaseId',
@@ -34,6 +39,7 @@ export const docutrayKnowledgeBaseFields: INodeProperties[] = [
 		required: true,
 		displayOptions: {
 			show: {
+				resource: ['knowledgeBase'],
 				operation: ['search'],
 			},
 		},
@@ -49,6 +55,7 @@ export const docutrayKnowledgeBaseFields: INodeProperties[] = [
 		required: true,
 		displayOptions: {
 			show: {
+				resource: ['knowledgeBase'],
 				operation: ['search'],
 			},
 		},
@@ -65,6 +72,7 @@ export const docutrayKnowledgeBaseFields: INodeProperties[] = [
 		type: 'number',
 		displayOptions: {
 			show: {
+				resource: ['knowledgeBase'],
 				operation: ['search'],
 			},
 		},
@@ -80,6 +88,7 @@ export const docutrayKnowledgeBaseFields: INodeProperties[] = [
 		type: 'number',
 		displayOptions: {
 			show: {
+				resource: ['knowledgeBase'],
 				operation: ['search'],
 			},
 		},
@@ -97,6 +106,7 @@ export const docutrayKnowledgeBaseFields: INodeProperties[] = [
 		type: 'boolean',
 		displayOptions: {
 			show: {
+				resource: ['knowledgeBase'],
 				operation: ['search'],
 			},
 		},

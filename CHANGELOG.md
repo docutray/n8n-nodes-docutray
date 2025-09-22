@@ -8,22 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2025-09-22
 
 ### Added
-- **Docutray Knowledge Base Node**: New independent node for RAG-based semantic search
-  - Search within knowledge bases using natural language queries
+- **Knowledge Base Search**: RAG-based semantic search functionality
+  - Natural language query support within knowledge bases
   - Configurable similarity threshold (0-1, default: 0.7)
-  - Adjustable result limits (1-50, default: 10)
+  - Adjustable result limits (1-50, default: 50)
   - Optional metadata inclusion in search results
-  - Support for knowledge base ID specification
-- Updated documentation with separate node sections
+- **Dynamic Knowledge Base Selector**: Interactive dropdown for knowledge base selection
+  - Displays knowledge base name, description, and document count
+  - Automatic loading of available knowledge bases
+  - Fallback to manual ID entry if API is unavailable
+- **Unified Node Architecture**: Resource-based organization following Slack node pattern
+  - Document Resource: Convert and Identify operations
+  - Knowledge Base Resource: Search operation
+  - Enhanced user experience with resource selector
+- **Modular Description Files**: Organized code structure
+  - `DocumentDescription.ts` for document operations
+  - `KnowledgeBaseDescription.ts` for knowledge base operations
+  - `DocutrayDescription.ts` as main combiner
+- Enhanced subtitle display showing "Resource - Operation" format
 - Added new keywords: knowledge-base, rag, semantic-search
 
 ### Changed
-- **BREAKING**: Refactored architecture into two specialized nodes
-  - **Docutray**: Focused on document processing (Convert/Identify operations)
-  - **Docutray Knowledge Base**: Dedicated to knowledge base search operations
-- Updated package.json to register both nodes
-- Enhanced documentation structure for multi-node architecture
-- Improved separation of concerns following n8n best practices
+- Enhanced documentation for unified architecture
+- Updated default limits for better performance (default: 50 results)
+- Improved code organization with modular description files
 
 ## [0.1.0] - 2025-09-22
 
