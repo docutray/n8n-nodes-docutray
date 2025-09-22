@@ -6,6 +6,7 @@ This is an n8n community node that provides seamless integration with [Docutray]
 
 - **Document OCR**: Extract text from images and PDFs using advanced OCR technology
 - **Document Type Identification**: Automatically identify document types with confidence scores
+- **Knowledge Base Search**: RAG-based semantic search in knowledge bases for intelligent information retrieval
 - **Multiple Input Methods**: Support for file uploads, Base64 encoded images, and image URLs
 - **Wide Format Support**: JPEG, PNG, GIF, BMP, WebP, and PDF files (up to 100MB)
 
@@ -52,6 +53,21 @@ Automatically identify document types from a list of options.
 **Response includes:**
 - Primary document type with confidence score
 - Alternative document type suggestions
+
+### Knowledge Base Search Operation
+Perform semantic search within knowledge bases using RAG technology.
+
+**Parameters:**
+- Knowledge Base ID (required) - Unique identifier of the knowledge base
+- Query (required) - Search query text (max 1000 characters)
+- Limit (optional) - Maximum number of results (1-50, default: 10)
+- Similarity Threshold (optional) - Minimum similarity threshold (0-1, default: 0.7)
+- Include Metadata (optional) - Whether to include metadata in results (default: true)
+
+**Response includes:**
+- Semantic search results with relevance scores
+- Document excerpts and content snippets
+- Optional metadata for each result
 
 ## Compatibility
 
