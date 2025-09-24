@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer';
 import {
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
@@ -167,14 +166,14 @@ export class Docutray implements INodeType {
 						// Use multipart/form-data for binary files
 						const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
 						const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-						const buffer = Buffer.from(binaryData.data, 'base64');
 
 						const formData: any = {};
 						formData.image = {
-							value: buffer,
+							value: binaryData.data,
 							options: {
 								filename: binaryData.fileName || 'document.pdf',
 								contentType: binaryData.mimeType,
+								encoding: 'base64',
 							},
 						};
 
