@@ -8,7 +8,7 @@ import {
 	NodeConnectionType,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { resourceSelector, docutrayFields, docutrayOperations } from './DocutrayDescription';
+import { docutrayFields, docutrayOperations, resourceSelector } from './DocutrayDescription';
 
 export class Docutray implements INodeType {
 	description: INodeTypeDescription = {
@@ -16,7 +16,8 @@ export class Docutray implements INodeType {
 		name: 'docutray',
 		icon: 'file:docutray.svg',
 		group: ['transform'],
-		version: 1,
+		version: [1],
+		defaultVersion: 1,
 		subtitle: '={{$parameter["resource"]}} - {{$parameter["operation"]}}',
 		description: 'Process documents and search knowledge bases with Docutray services',
 		defaults: {
@@ -30,12 +31,6 @@ export class Docutray implements INodeType {
 				required: true,
 			},
 		],
-		requestDefaults: {
-			baseURL: 'https://app.docutray.com/api',
-			headers: {
-				Accept: 'application/json',
-			},
-		},
 		properties: [
 			resourceSelector,
 			...docutrayOperations,
