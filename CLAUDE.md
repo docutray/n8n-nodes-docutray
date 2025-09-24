@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lintfix`: Auto-fix ESLint issues where possible
 - `npm run format`: Format code with Prettier
 - `npm run prepublishOnly`: Full build + lint check for publishing
+- `npx @n8n/scan-community-package n8n-nodes-docutray`: Scan package for n8n verification compliance
 
 ## Architecture
 
@@ -59,6 +60,33 @@ Uses `eslint-plugin-n8n-nodes-base` with community package rules. Configured to 
 
 ## Testing Locally
 Install n8n globally (`npm install n8n -g`) and link this package for local testing with n8n's development environment.
+
+## Verification and Publication
+
+### Pre-Publication Verification
+Before publishing or submitting for n8n verification, ensure the package passes all compliance checks:
+
+1. **Build and Lint**: Run `npm run prepublishOnly` to ensure clean build and linting
+2. **Security Scan**: Run `npx @n8n/scan-community-package n8n-nodes-docutray` to verify:
+   - MIT license compliance
+   - No external runtime dependencies
+   - No environment variable access
+   - No file system interactions
+   - TypeScript compliance
+   - n8n node development guidelines adherence
+
+### Publication Process
+1. **Local Testing**: Test thoroughly with local n8n installation
+2. **Compliance Check**: Ensure scanner passes without errors
+3. **npm Publication**: Publish package to npm registry
+4. **n8n Verification**: Submit for n8n community node verification (optional but recommended)
+
+### Verification Requirements
+- Package must be published to npm
+- Must pass `@n8n/scan-community-package` scanner
+- No runtime dependencies allowed for verified status
+- MIT license required
+- Must follow n8n community node guidelines
 
 ## Docutray API Details
 - **Base URL**: https://docs.docutray.com/docs/api/
