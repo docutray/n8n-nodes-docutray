@@ -57,7 +57,7 @@ export class Docutray implements INodeType {
 						json: true,
 					};
 
-					const response = await this.helpers.requestWithAuthentication.call(
+					const response = await this.helpers.httpRequestWithAuthentication.call(
 						this,
 						'docutrayApi',
 						requestOptions,
@@ -121,7 +121,7 @@ export class Docutray implements INodeType {
 							json: true,
 						};
 
-						const responseData = await this.helpers.requestWithAuthentication.call(
+						const responseData = await this.helpers.httpRequestWithAuthentication.call(
 							this,
 							'docutrayApi',
 							requestOptions,
@@ -245,7 +245,7 @@ export class Docutray implements INodeType {
 						requestOptions.json = true;
 					}
 
-					const responseData = await this.helpers.requestWithAuthentication.call(
+					const responseData = await this.helpers.httpRequestWithAuthentication.call(
 						this,
 						'docutrayApi',
 						requestOptions,
