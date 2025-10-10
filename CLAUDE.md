@@ -115,3 +115,61 @@ Before publishing or submitting for n8n verification, ensure the package passes 
 - **Supported formats**: JPEG, PNG, GIF, BMP, WebP, PDF (max 100MB)
 - **Input methods**: File upload, Base64 encoding, or image URL
 - **Production endpoint**: `https://app.docutray.com/api`
+
+## n8n Development Resources
+
+### Primary Reference: n8n DeepWiki
+**URL**: https://deepwiki.com/n8n-io/n8n
+
+DeepWiki provides comprehensive technical documentation for n8n's architecture, development, and internals. Use this resource when you need detailed information about n8n's implementation.
+
+### Quick Reference Index
+
+#### Core Architecture & Packages
+- **n8n Overview** - Platform components, key features, monorepo structure
+- **Workflow Execution Engine** - WorkflowExecute class, node execution stack, active executions management
+- **Package Responsibilities**:
+  - `n8n` - CLI package
+  - `n8n-core` - Core execution engine (contains NodeExecuteFunctions.ts with helper methods)
+  - `n8n-workflow` - Workflow foundation (base types and interfaces)
+  - `n8n-nodes-base` - Base nodes collection (400+ credential types, reference implementations)
+
+#### Node Development
+- **Custom Node Creation** - Using `n8n-node-dev new` to generate templates
+- **Node Development CLI** - Commands: `new`, `build`, `info`, `format`
+- **Node Type System** - `INodeType` interface, node implementation structure
+- **Scaffolding Location** - `~/.n8n/custom/` for local development
+
+#### Helper Methods & APIs (packages/core/src/NodeExecuteFunctions.ts)
+- **IExecuteFunctions Interface** - Provides context and helper methods for node execution
+- **HTTP Request Helpers**:
+  - `httpRequest()` - Basic HTTP requests
+  - `httpRequestWithAuthentication()` - Authenticated HTTP requests (⚠️ Known issue #18271 with formData)
+  - `requestWithAuthentication()` - Legacy method (deprecated)
+- **Binary Data Handling** - Utilities for processing binary data in nodes
+- **Form Data Processing** - Support for multipart/form-data (requires manual FormData construction for complex cases)
+
+#### Authentication & Credentials
+- **Credential Types** - API Keys, OAuth 1.0/2.0, Basic Auth, Bearer Tokens, Custom Headers, Certificate Auth
+- **Credentials Management** - ICredentialType interface, authenticate object pattern
+- **Multiple Credential Support** - Nodes can support multiple authentication methods
+
+#### Known Issues & Workarounds
+- **Issue #18271**: `httpRequestWithAuthentication` does not properly handle `formData` for multipart/form-data
+  - **Workaround**: Manually construct FormData using `form-data` library and use `httpRequest` with manual authentication
+  - **Affected**: Binary file uploads with multipart/form-data
+  - **See**: https://github.com/n8n-io/n8n/issues/18271
+
+#### Testing & Deployment
+- **Testing Infrastructure** - E2E testing, unit testing, integration testing
+- **Configuration Options** - Environment variables, deployment settings
+- **Docker Deployment** - Container-based deployment strategies
+- **Scaling Strategies** - Performance and scaling considerations
+
+### When to Consult DeepWiki
+- Understanding n8n's internal architecture and execution flow
+- Researching helper method implementations and capabilities
+- Finding reference implementations in `n8n-nodes-base`
+- Debugging complex issues with HTTP requests, authentication, or data handling
+- Learning about workflow execution lifecycle and hooks
+- Understanding credential system and authentication patterns
