@@ -12,6 +12,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run prepublishOnly`: Full build + lint check for publishing
 - `npx @n8n/scan-community-package n8n-nodes-docutray`: Scan package for n8n verification compliance
 
+### Local Development Workflow
+
+To test the node locally while developing:
+
+1. **Link the package**: Run `npm link` in this directory to create a global symlink
+2. **Start watch mode**: Run `npm run dev` to compile TypeScript in watch mode
+3. **Link to n8n**: In your n8n installation directory, run `npm link n8n-nodes-docutray`
+4. **Start n8n with dev settings**: Run with environment variables for optimal development:
+   ```bash
+   N8N_DEV_RELOAD=true N8N_LOG_LEVEL=debug n8n start
+   ```
+   - `N8N_DEV_RELOAD=true`: Automatically reloads nodes when changes are detected
+   - `N8N_LOG_LEVEL=debug`: Shows detailed debug logs for troubleshooting
+5. **Test changes**: Changes to TypeScript files will auto-compile and auto-reload in n8n
+
+Note: After making changes to icons or node descriptions, you may need to restart n8n completely.
+
 ## Architecture
 
 This is an n8n community node package for Docutray integration using the n8n nodes API version 1. The package provides a unified node with resource-based organization for OCR document processing, document type identification, and knowledge base search using RAG technology. The project follows n8n's standard node development patterns:
