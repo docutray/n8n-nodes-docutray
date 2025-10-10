@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-10-10
+
+### Added
+- **Dynamic Document Type Selector**: API-powered dropdowns for document type selection
+  - New `getDocumentTypes()` loadOptions method fetches available document types from `/api/document-types`
+  - Convert operation: Single-select dropdown for `documentTypeCode` (replaces manual text input)
+  - Identify operation: Multi-select dropdown for `documentTypeCodes` (replaces fixedCollection)
+  - Displays only document type name for cleaner UX (codeType used as value)
+  - Fetches all document types without filters (public, private, draft, published)
+  - Maintains backward compatibility with manual code entry
+  - Follows same pattern as existing Knowledge Base selector
+
+### Changed
+- Simplified execute method logic for Identify operation to handle multiOptions format
+- Enhanced field descriptions with hints for better user guidance
+
 ## [0.4.4] - 2025-10-10
 
 ### Changed
