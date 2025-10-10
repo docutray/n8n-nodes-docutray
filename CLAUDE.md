@@ -78,6 +78,23 @@ Uses `eslint-plugin-n8n-nodes-base` with community package rules. Configured to 
 ## Testing Locally
 Install n8n globally (`npm install n8n -g`) and link this package for local testing with n8n's development environment.
 
+## Development Workflow
+
+### Branch Strategy
+- **Main branch**: `master`
+- **Development**: Always create feature branches from `master`
+- **Integration**: All changes must be merged to `master` via Pull Request
+- **Never commit directly to master**: Use PRs for code review and validation
+
+### Pull Request Process
+1. Create feature branch from `master`: `git checkout -b feature/description`
+2. Make changes and commit with descriptive messages
+3. Push branch: `git push origin feature/description`
+4. Create Pull Request to `master`
+5. Ensure all validations pass (build, lint, format, scanner)
+6. Merge PR (squash recommended for cleaner history)
+7. Delete feature branch after merge
+
 ## Verification and Publication
 
 ### Pre-Publication Verification
