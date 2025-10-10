@@ -79,6 +79,46 @@ export class Docutray implements INodeType {
 
 				return returnData;
 			},
+			async getDocumentTypes(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const returnData: INodePropertyOptions[] = [];
+
+				try {
+					const requestOptions = {
+						method: 'GET' as const,
+						url: 'https://app.docutray.com/api/document-types',
+						headers: {
+							Accept: 'application/json',
+						},
+						qs: {
+							limit: 100,
+						},
+						json: true,
+					};
+
+					const response = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'docutrayApi',
+						requestOptions,
+					);
+
+					const documentTypes = response.data || [];
+
+					for (const dt of documentTypes) {
+						const name = dt.name || dt.codeType;
+
+						returnData.push({
+							name: name,
+							value: dt.codeType,
+						});
+					}
+
+					returnData.sort((a, b) => a.name.localeCompare(b.name));
+				} catch (error) {
+					// Silently fail to allow manual input fallback
+				}
+
+				return returnData;
+			},
 		},
 	};
 
@@ -192,16 +232,8 @@ export class Docutray implements INodeType {
 						const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
 						requestBody.document_type_code = documentTypeCode;
 					} else if (operation === 'identify') {
-						const documentTypeOptionsParam = this.getNodeParameter('documentTypeOptions', i) as any;
-
-						let optionsArray: string[] = [];
-						if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
-							optionsArray = documentTypeOptionsParam.values
-								.map((item: any) => item.code)
-								.filter((code: string) => code && code.trim());
-						}
-
-						requestBody.document_type_code_options = optionsArray;
+						const documentTypeCodes = this.getNodeParameter('documentTypeCodes', i) as string[];
+						requestBody.document_type_code_options = documentTypeCodes;
 					}
 
 					// Add document metadata if provided

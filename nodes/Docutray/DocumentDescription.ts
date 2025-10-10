@@ -114,9 +114,12 @@ const convertOperation: INodeProperties[] = [
 		description: 'URL of the image to process',
 	},
 	{
-		displayName: 'Document Type Code',
+		displayName: 'Document Type Code Name or ID',
 		name: 'documentTypeCode',
-		type: 'string',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'getDocumentTypes',
+		},
 		required: true,
 		displayOptions: {
 			show: {
@@ -125,7 +128,9 @@ const convertOperation: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Document type code to specify the expected document format',
+		description: 'Choose from the list or enter a code manually. Choose from the list, or specify a code using an <a href="https://docs.n8n.io/code/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		hint: 'Select a document type from the dropdown or enter its code directly',
+		placeholder: 'Select document type or enter code',
 	},
 	{
 		displayName: 'Image Content Type',
@@ -255,9 +260,12 @@ const identifyOperation: INodeProperties[] = [
 		description: 'URL of the image to process',
 	},
 	{
-		displayName: 'Document Type Options',
-		name: 'documentTypeOptions',
-		type: 'fixedCollection',
+		displayName: 'Document Type Codes',
+		name: 'documentTypeCodes',
+		type: 'multiOptions',
+		typeOptions: {
+			loadOptionsMethod: 'getDocumentTypes',
+		},
 		required: true,
 		displayOptions: {
 			show: {
@@ -265,28 +273,10 @@ const identifyOperation: INodeProperties[] = [
 				operation: ['identify'],
 			},
 		},
-		default: { values: [] },
-		description: 'List of possible document type codes',
-		options: [
-			{
-				name: 'values',
-				displayName: 'Document Types',
-				values: [
-					{
-						displayName: 'Document Type Code',
-						name: 'code',
-						type: 'string',
-						default: '',
-						required: true,
-						description: 'Document type code (e.g., cartola_cc, cartola_tc)',
-						placeholder: 'cartola_cc',
-					},
-				],
-			},
-		],
-		typeOptions: {
-			multipleValues: true,
-		},
+		default: [],
+		description: 'Choose from the list or enter codes manually. Choose from the list, or specify codes using an <a href="https://docs.n8n.io/code/expressions/">expression</a>. Choose from the list, or specify IDs using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		hint: 'Select one or more document types from the dropdown or enter codes directly',
+		placeholder: 'Select document types or enter codes',
 	},
 	{
 		displayName: 'Image Content Type',
