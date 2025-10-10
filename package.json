@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-docutray",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "n8n community nodes for Docutray OCR, document identification, and knowledge base search services",
   "keywords": [
     "n8n-community-node-package",
