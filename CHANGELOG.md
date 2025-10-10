@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed unused README_TEMPLATE.md file
 - Synced package-lock.json with version 0.4.3
 
+## [0.4.2] - 2025-10-08
+
+### Fixed
+- Replace deprecated `requestWithAuthentication` method with `httpRequestWithAuthentication`
+
 ## [0.4.1] - 2025-10-06
 
 ### Fixed
