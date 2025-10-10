@@ -146,7 +146,7 @@ export class Docutray implements INodeType {
 					// Handle document operations (convert/identify)
 					const inputMethod = this.getNodeParameter('inputMethod', i) as string;
 
-					let requestOptions: any = {
+					const requestOptions: any = {
 						method: 'POST',
 						url:
 							operation === 'convert'
@@ -154,188 +154,68 @@ export class Docutray implements INodeType {
 								: 'https://app.docutray.com/api/identify',
 						headers: {
 							Accept: 'application/json',
+							'Content-Type': 'application/json',
 						},
 					};
 
+					const requestBody: any = {};
+
+					// Handle all input methods using JSON format
 					if (inputMethod === 'binaryData') {
-						// Use multipart/form-data for binary files
+						// Binary data: convert to base64 and send as JSON
 						const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
 						const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
 
-						// Convert base64 to binary buffer for multipart/form-data
-						const binaryBuffer = Buffer.from(binaryData.data, 'base64');
+						// Binary data in n8n is already stored as base64
+						requestBody.image_base64 = binaryData.data;
+						requestBody.image_content_type = binaryData.mimeType;
+					} else if (inputMethod === 'base64') {
+						const imageBase64 = this.getNodeParameter('imageBase64', i) as string;
+						const imageContentType = this.getNodeParameter('imageContentType', i) as string;
 
-						const formData: any = {};
-						formData.image = {
-							value: binaryBuffer,
-							options: {
-								filename: binaryData.fileName || 'document.pdf',
-								contentType: binaryData.mimeType,
-							},
-						};
+						requestBody.image_base64 = imageBase64;
+						requestBody.image_content_type = imageContentType;
+					} else if (inputMethod === 'url') {
+						const imageUrl = this.getNodeParameter('imageUrl', i) as string;
+						requestBody.image_url = imageUrl;
 
-						if (operation === 'convert') {
-							const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
-							formData.document_type_code = documentTypeCode;
-						} else if (operation === 'identify') {
-							const documentTypeOptionsParam = this.getNodeParameter(
-								'documentTypeOptions',
-								i,
-							) as any;
-
-							let optionsArray: string[] = [];
-							if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
-								optionsArray = documentTypeOptionsParam.values
-									.map((item: any) => item.code)
-									.filter((code: string) => code && code.trim());
-							}
-
-							formData.document_type_code_options = JSON.stringify(optionsArray);
-						}
-
-						const documentMetadata = this.getNodeParameter('documentMetadata', i, '{}') as string;
-						if (documentMetadata && documentMetadata !== '{}') {
-							try {
-								const parsedMetadata = JSON.parse(documentMetadata);
-								formData.document_metadata = JSON.stringify(parsedMetadata);
-							} catch (error) {
-								throw new NodeOperationError(this.getNode(), 'Invalid JSON in document metadata');
-							}
-						}
-
-						requestOptions.formData = formData;
-					} else {
-						// Use JSON for Base64 and URL methods
-						requestOptions.headers['Content-Type'] = 'application/json';
-
-						const requestBody: any = {};
-
-						if (inputMethod === 'base64') {
-							const imageBase64 = this.getNodeParameter('imageBase64', i) as string;
-							const imageContentType = this.getNodeParameter('imageContentType', i) as string;
-
-							requestBody.image_base64 = imageBase64;
-							requestBody.image_content_type = imageContentType;
-						} else if (inputMethod === 'url') {
-							const imageUrl = this.getNodeParameter('imageUrl', i) as string;
-							requestBody.image_url = imageUrl;
-
-							const imageContentType = this.getNodeParameter(
-								'imageContentType',
-								i,
-								'application/pdf',
-							) as string;
-							requestBody.image_content_type = imageContentType;
-						}
-
-						if (operation === 'convert') {
-							const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
-							requestBody.document_type_code = documentTypeCode;
-						} else if (operation === 'identify') {
-							const documentTypeOptionsParam = this.getNodeParameter(
-								'documentTypeOptions',
-								i,
-							) as any;
-
-							let optionsArray: string[] = [];
-							if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
-								optionsArray = documentTypeOptionsParam.values
-									.map((item: any) => item.code)
-									.filter((code: string) => code && code.trim());
-							}
-
-							requestBody.document_type_code_options = optionsArray;
-						}
-
-						const documentMetadata = this.getNodeParameter('documentMetadata', i, '{}') as string;
-						if (documentMetadata && documentMetadata !== '{}') {
-							try {
-								requestBody.document_metadata = JSON.parse(documentMetadata);
-							} catch (error) {
-								throw new NodeOperationError(this.getNode(), 'Invalid JSON in document metadata');
-							}
-						}
-
-						requestOptions.body = requestBody;
-						requestOptions.json = true;
+						const imageContentType = this.getNodeParameter(
+							'imageContentType',
+							i,
+							'application/pdf',
+						) as string;
+						requestBody.image_content_type = imageContentType;
 					}
 
-					// Workaround for n8n issue #18271: httpRequestWithAuthentication does not properly handle formData
-					// See: https://github.com/n8n-io/n8n/issues/18271
-					// For binary uploads, we manually construct FormData and use httpRequest directly
-					const credentials = await this.getCredentials('docutrayApi');
+					// Add operation-specific parameters
+					if (operation === 'convert') {
+						const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
+						requestBody.document_type_code = documentTypeCode;
+					} else if (operation === 'identify') {
+						const documentTypeOptionsParam = this.getNodeParameter('documentTypeOptions', i) as any;
 
-					if (inputMethod === 'binaryData') {
-						requestOptions.headers['Authorization'] = `Bearer ${credentials.apiKey}`;
-						delete requestOptions.formData; // Remove formData
-
-						// Construct form manually
-						const FormData = require('form-data');
-						const form = new FormData();
-
-						// Add the binary file
-						const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
-						const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-						const binaryBuffer = Buffer.from(binaryData.data, 'base64');
-						form.append('image', binaryBuffer, {
-							filename: binaryData.fileName || 'document.pdf',
-							contentType: binaryData.mimeType,
-						});
-
-						// Add other form fields
-						if (operation === 'convert') {
-							const documentTypeCode = this.getNodeParameter('documentTypeCode', i) as string;
-							form.append('document_type_code', documentTypeCode);
-						} else if (operation === 'identify') {
-							const documentTypeOptionsParam = this.getNodeParameter(
-								'documentTypeOptions',
-								i,
-							) as any;
-							let optionsArray: string[] = [];
-							if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
-								optionsArray = documentTypeOptionsParam.values
-									.map((item: any) => item.code)
-									.filter((code: string) => code && code.trim());
-							}
-							form.append('document_type_code_options', JSON.stringify(optionsArray));
+						let optionsArray: string[] = [];
+						if (documentTypeOptionsParam && documentTypeOptionsParam.values) {
+							optionsArray = documentTypeOptionsParam.values
+								.map((item: any) => item.code)
+								.filter((code: string) => code && code.trim());
 						}
 
-						const documentMetadata = this.getNodeParameter('documentMetadata', i, '{}') as string;
-						if (documentMetadata && documentMetadata !== '{}') {
-							try {
-								const parsedMetadata = JSON.parse(documentMetadata);
-								form.append('document_metadata', JSON.stringify(parsedMetadata));
-							} catch (error) {
-								throw new NodeOperationError(this.getNode(), 'Invalid JSON in document metadata');
-							}
-						}
-
-						// Set form as body and headers
-						requestOptions.body = form;
-						requestOptions.headers = {
-							...requestOptions.headers,
-							...form.getHeaders(),
-						};
-
-						const responseData = await this.helpers.httpRequest(requestOptions);
-
-						let parsedResponse = responseData;
-						if (typeof responseData === 'string') {
-							try {
-								parsedResponse = JSON.parse(responseData);
-							} catch (parseError) {
-								parsedResponse = responseData;
-							}
-						}
-
-						returnData.push({
-							json: parsedResponse,
-							pairedItem: {
-								item: i,
-							},
-						});
-						continue; // Skip the default httpRequestWithAuthentication call
+						requestBody.document_type_code_options = optionsArray;
 					}
+
+					// Add document metadata if provided
+					const documentMetadata = this.getNodeParameter('documentMetadata', i, '{}') as string;
+					if (documentMetadata && documentMetadata !== '{}') {
+						try {
+							requestBody.document_metadata = JSON.parse(documentMetadata);
+						} catch (error) {
+							throw new NodeOperationError(this.getNode(), 'Invalid JSON in document metadata');
+						}
+					}
+
+					requestOptions.body = requestBody;
+					requestOptions.json = true;
 
 					const responseData = await this.helpers.httpRequestWithAuthentication.call(
 						this,
