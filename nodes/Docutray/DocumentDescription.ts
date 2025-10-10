@@ -343,7 +343,4 @@ const identifyOperation: INodeProperties[] = [
 	},
 ];
 
-export const documentFields: INodeProperties[] = [
-	...convertOperation,
-	...identifyOperation,
-];
+export const documentFields: INodeProperties[] = [...convertOperation, ...identifyOperation];

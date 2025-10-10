@@ -27,7 +27,4 @@ export const docutrayOperations: INodeProperties[] = [
 	...knowledgeBaseOperations,
 ];
 
-export const docutrayFields: INodeProperties[] = [
-	...documentFields,
-	...knowledgeBaseFields,
-];
+export const docutrayFields: INodeProperties[] = [...documentFields, ...knowledgeBaseFields];
