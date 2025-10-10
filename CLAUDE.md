@@ -12,6 +12,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run prepublishOnly`: Full build + lint check for publishing
 - `npx @n8n/scan-community-package n8n-nodes-docutray`: Scan package for n8n verification compliance
 
+### Local Development Workflow
+
+To test the node locally while developing:
+
+1. **Link the package**: Run `npm link` in this directory to create a global symlink
+2. **Start watch mode**: Run `npm run dev` to compile TypeScript in watch mode
+3. **Link to n8n**: In your n8n installation directory, run `npm link n8n-nodes-docutray`
+4. **Start n8n with dev settings**: Run with environment variables for optimal development:
+   ```bash
+   N8N_DEV_RELOAD=true N8N_LOG_LEVEL=debug n8n start
+   ```
+   - `N8N_DEV_RELOAD=true`: Automatically reloads nodes when changes are detected
+   - `N8N_LOG_LEVEL=debug`: Shows detailed debug logs for troubleshooting
+5. **Test changes**: Changes to TypeScript files will auto-compile and auto-reload in n8n
+
+Note: After making changes to icons or node descriptions, you may need to restart n8n completely.
+
 ## Architecture
 
 This is an n8n community node package for Docutray integration using the n8n nodes API version 1. The package provides a unified node with resource-based organization for OCR document processing, document type identification, and knowledge base search using RAG technology. The project follows n8n's standard node development patterns:
@@ -98,3 +115,61 @@ Before publishing or submitting for n8n verification, ensure the package passes 
 - **Supported formats**: JPEG, PNG, GIF, BMP, WebP, PDF (max 100MB)
 - **Input methods**: File upload, Base64 encoding, or image URL
 - **Production endpoint**: `https://app.docutray.com/api`
+
+## n8n Development Resources
+
+### Primary Reference: n8n DeepWiki
+**URL**: https://deepwiki.com/n8n-io/n8n
+
+DeepWiki provides comprehensive technical documentation for n8n's architecture, development, and internals. Use this resource when you need detailed information about n8n's implementation.
+
+### Quick Reference Index
+
+#### Core Architecture & Packages
+- **n8n Overview** - Platform components, key features, monorepo structure
+- **Workflow Execution Engine** - WorkflowExecute class, node execution stack, active executions management
+- **Package Responsibilities**:
+  - `n8n` - CLI package
+  - `n8n-core` - Core execution engine (contains NodeExecuteFunctions.ts with helper methods)
+  - `n8n-workflow` - Workflow foundation (base types and interfaces)
+  - `n8n-nodes-base` - Base nodes collection (400+ credential types, reference implementations)
+
+#### Node Development
+- **Custom Node Creation** - Using `n8n-node-dev new` to generate templates
+- **Node Development CLI** - Commands: `new`, `build`, `info`, `format`
+- **Node Type System** - `INodeType` interface, node implementation structure
+- **Scaffolding Location** - `~/.n8n/custom/` for local development
+
+#### Helper Methods & APIs (packages/core/src/NodeExecuteFunctions.ts)
+- **IExecuteFunctions Interface** - Provides context and helper methods for node execution
+- **HTTP Request Helpers**:
+  - `httpRequest()` - Basic HTTP requests
+  - `httpRequestWithAuthentication()` - Authenticated HTTP requests (⚠️ Known issue #18271 with formData)
+  - `requestWithAuthentication()` - Legacy method (deprecated)
+- **Binary Data Handling** - Utilities for processing binary data in nodes
+- **Form Data Processing** - Support for multipart/form-data (requires manual FormData construction for complex cases)
+
+#### Authentication & Credentials
+- **Credential Types** - API Keys, OAuth 1.0/2.0, Basic Auth, Bearer Tokens, Custom Headers, Certificate Auth
+- **Credentials Management** - ICredentialType interface, authenticate object pattern
+- **Multiple Credential Support** - Nodes can support multiple authentication methods
+
+#### Known Issues & Workarounds
+- **Issue #18271**: `httpRequestWithAuthentication` does not properly handle `formData` for multipart/form-data
+  - **Workaround**: Manually construct FormData using `form-data` library and use `httpRequest` with manual authentication
+  - **Affected**: Binary file uploads with multipart/form-data
+  - **See**: https://github.com/n8n-io/n8n/issues/18271
+
+#### Testing & Deployment
+- **Testing Infrastructure** - E2E testing, unit testing, integration testing
+- **Configuration Options** - Environment variables, deployment settings
+- **Docker Deployment** - Container-based deployment strategies
+- **Scaling Strategies** - Performance and scaling considerations
+
+### When to Consult DeepWiki
+- Understanding n8n's internal architecture and execution flow
+- Researching helper method implementations and capabilities
+- Finding reference implementations in `n8n-nodes-base`
+- Debugging complex issues with HTTP requests, authentication, or data handling
+- Learning about workflow execution lifecycle and hooks
+- Understanding credential system and authentication patterns

@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2025-10-10
+
+### Fixed
+- **Binary Data Upload Error**: Resolved HTTP 415 "Content-Type not supported" error for binary file uploads
+  - Implemented workaround for n8n issue #18271 where `httpRequestWithAuthentication` doesn't properly handle multipart/form-data
+  - Manually construct FormData using `form-data` library with `httpRequest` and manual authentication
+  - Convert base64 to Buffer before sending binary data
+  - Remove incorrect `image_content_type` field from binary uploads (only valid for JSON requests)
+  - Add explicit `Content-Type: application/json` header for base64/URL methods
+
+### Added
+- **n8n Development Documentation**: Comprehensive reference guide to n8n DeepWiki (https://deepwiki.com/n8n-io/n8n)
+  - Quick reference index for Core Architecture, Node Development, Helper Methods, Authentication
+  - Known Issues & Workarounds section documenting n8n issue #18271
+  - Guidelines for when to consult DeepWiki resources
+- **Local Development Workflow**: Step-by-step guide for local development
+  - npm link setup for testing nodes locally
+  - Watch mode compilation with `npm run dev`
+  - n8n dev environment configuration with `N8N_DEV_RELOAD` and `N8N_LOG_LEVEL`
+
+### Changed
+- Code formatting improvements with Prettier
+- Removed unused README_TEMPLATE.md file
+- Synced package-lock.json with version 0.4.3
+
+## [0.4.2] - 2025-10-08
+
+### Fixed
+- Replace deprecated `requestWithAuthentication` method with `httpRequestWithAuthentication`
+
 ## [0.4.1] - 2025-10-06
 
 ### Fixed

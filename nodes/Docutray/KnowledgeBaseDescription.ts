@@ -44,7 +44,8 @@ export const knowledgeBaseFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Choose from the list or enter an ID manually. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description:
+			'Choose from the list or enter an ID manually. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		hint: 'Select a knowledge base from the dropdown or enter its ID directly',
 		placeholder: 'Select knowledge base or enter ID',
 	},
