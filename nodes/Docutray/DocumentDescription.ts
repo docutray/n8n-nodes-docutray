@@ -16,7 +16,7 @@ export const documentOperations: INodeProperties[] = [
 				name: 'Convert',
 				value: 'convert',
 				description: 'Extract text from document using OCR',
-				action: 'Convert document to text',
+				action: 'Convert document to JSON',
 				routing: {
 					request: {
 						method: 'POST',
