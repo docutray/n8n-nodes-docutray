@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-docutray",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "n8n community nodes for Docutray OCR, document identification, and knowledge base search services",
   "keywords": [
     "n8n-community-node-package",
@@ -47,7 +47,6 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^24.5.2",
     "@typescript-eslint/parser": "~8.32.0",
     "eslint": "^8.57.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
